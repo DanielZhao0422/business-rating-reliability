@@ -1,0 +1,55 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python caches and build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Local credentials and environment files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Yelp and other local datasets (retain directory placeholders)
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Only approved synthetic data belongs in data/sample.
+data/sample/*
+!data/sample/.gitkeep
+!data/sample/README.md
+
+# Notebook state
+.ipynb_checkpoints/
+
+# Unapproved exports, private records, and local database files
+exports/
+private/
+data/private/
+*.duckdb
+*.duckdb.wal
+*.sqlite
+*.sqlite3
+*.pbix
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
