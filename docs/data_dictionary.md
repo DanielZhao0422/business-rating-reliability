@@ -1,23 +1,54 @@
 # Data Dictionary
 
-No Yelp data is included or ingested in Phase 1. This provisional dictionary
-records the minimum analytical concepts expected in later phases; it is not a
-claim about a finalized schema. Field names and types must be verified against
-the downloaded dataset documentation before implementation.
+Phase 2A implements the following schema against fictional Yelp-style fixtures.
+The expected source mappings must still be checked against the specific real
+dataset version in Phase 2B.
 
-| Analytical field | Intended meaning | Expected type | Phase 1 status |
-|---|---|---:|---|
-| `business_id` | Dataset-provided business identifier | string | Planned; potentially sensitive linkage key |
-| `review_id` | Dataset-provided review identifier | string | Planned; never used to commit real text |
-| `stars` | Review rating on the 1--5 scale | numeric | Represented only by synthetic test values |
-| `review_date` | Review event date/time | date or timestamp | Planned; needed for time-aware evaluation |
-| `business_category` | Business classification | string or list | Planned; requires normalization decisions |
-| `city` / `state` | Coarse business geography | string | Planned; coverage and privacy require review |
-| `observed_review_count` | Number of eligible reviews in a defined window | integer | Derived later |
-| `observed_mean_rating` | Arithmetic mean within a defined window | float | Baseline function implemented |
-| `adjusted_mean_rating` | Shrinkage point estimate using documented inputs | float | Baseline function implemented |
+## `businesses`
 
-Real review text must not be committed. Raw, interim, and processed datasets
-remain local and Git-ignored. Only explicitly approved synthetic fixtures may be
-placed in `data/sample/`.
+| Column | Expected source field | DuckDB type | Null? | Validation and meaning |
+|---|---|---|---:|---|
+| `business_id` | `business_id` | `VARCHAR` primary key | No | Trimmed, nonempty string; required |
+| `name` | `name` | `VARCHAR` | Yes | Trimmed optional text; no invented replacement |
+| `city` | `city` | `VARCHAR` | Yes | Trimmed optional text |
+| `state` | `state` | `VARCHAR` | Yes | Trimmed optional text |
+| `categories` | `categories` | `VARCHAR` | Yes | Source category string preserved after outer trimming |
+| `source_stars` | `stars` | `DOUBLE` | Yes | Finite 1-5 source aggregate; invalid or missing becomes `NULL` plus warning |
+| `source_review_count` | `review_count` | `BIGINT` | Yes | Nonnegative integer source aggregate; invalid or missing becomes `NULL` plus warning |
+
+## `reviews`
+
+| Column | Expected source field | DuckDB type | Null? | Validation and meaning |
+|---|---|---|---:|---|
+| `review_id` | `review_id` | `VARCHAR` primary key | No | Trimmed, nonempty string; required |
+| `business_id` | `business_id` | `VARCHAR`, foreign key | No | Must reference an accepted business |
+| `stars` | `stars` | `TINYINT` | No | JSON integer from 1 through 5; booleans and numeric strings rejected |
+| `date` | `date` | `DATE` | No | Valid date parsed from `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS` |
+
+Review text is intentionally not selected or stored. Individual ratings and
+dates remain unaggregated so later work can study distributions, review volume,
+time, uncertainty, ranking stability, and temporal evaluation.
+
+## Missing values and normalization
+
+Outer whitespace is removed from valid identifiers and text. Required review
+fields are fatal when absent or invalid. Optional business fields are permitted;
+missing or invalid optional values become SQL `NULL` and create warning reason
+codes. The pipeline never fills missing geography, categories, ratings, dates,
+or identifiers with guesses.
+
+Valid review ratings of 1 and 5 are retained. No rating is removed merely for
+being unusual, and no review-count threshold is applied during ingestion.
+
+## Source aggregates versus analytical metrics
+
+`source_stars` and `source_review_count` are descriptive fields supplied on the
+business record. They may reflect a different review population or cutoff than
+the review JSONL file. A mismatch with later reconstructed metrics is not, by
+itself, evidence of corruption. Primary research metrics will be computed from
+the explicitly selected review population.
+
+Real review text and records must not be committed. Raw, interim, and processed
+data remain local and Git-ignored. Only the named fictional JSONL fixtures in
+`data/sample/` are approved for version control.
 

@@ -3,4 +3,4 @@
 from rating_reliability.metrics import adjusted_mean_rating, arithmetic_mean_rating
 
 __all__ = ["adjusted_mean_rating", "arithmetic_mean_rating"]
-__version__ = "0.1.0"
+__version__ = "0.2.0"

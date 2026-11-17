@@ -1,0 +1,20 @@
+{"review_id":"rev-001","business_id":"biz-001","stars":1,"date":"2024-01-01 09:15:00"}
+{"review_id":"rev-002","business_id":"biz-001","stars":5,"date":"2024-01-02 10:30:00"}
+{"review_id":"rev-003","business_id":"biz-002","stars":3,"date":"2024-02-01 12:00:00"}
+{"review_id":"rev-004","business_id":"biz-003","stars":4,"date":"2024-03-15 08:05:00"}
+{"review_id":"rev-005","business_id":"biz-004","stars":2,"date":"2024-04-20 14:45:00"}
+{"review_id":"rev-006","business_id":"biz-005","stars":5,"date":"2024-05-10 16:20:00"}
+{"review_id":"rev-001","business_id":"biz-001","stars":1,"date":"2024-01-01 09:15:00"}
+{"review_id":"rev-002","business_id":"biz-001","stars":4,"date":"2024-01-02 10:30:00"}
+{"review_id":"rev-bad-zero","business_id":"biz-001","stars":0,"date":"2024-06-01"}
+{"review_id":"rev-bad-bool","business_id":"biz-001","stars":true,"date":"2024-06-02"}
+{"review_id":"rev-bad-string","business_id":"biz-001","stars":"5","date":"2024-06-03"}
+{"business_id":"biz-001","stars":3,"date":"2024-06-04"}
+{"review_id":"rev-no-business","stars":3,"date":"2024-06-05"}
+{"review_id":"rev-bad-date","business_id":"biz-001","stars":3,"date":"2024-02-30"}
+{"review_id":"rev-orphan","business_id":"biz-999","stars":4,"date":"2024-06-06"}
+{"review_id":"broken-json"
+
+["rev-array"]
+null
+{"review_id":"rev-007","business_id":"biz-001","stars":3,"date":"2024-06-07"}

@@ -63,3 +63,49 @@ itself establish a causal explanation.
 - Missingness, duplicate records, business closures, category definitions, and
   changes in platform behavior require investigation before substantive claims.
 
+## Phase 2A ingestion population
+
+Ingestion establishes a technically valid relational population; it does not
+claim that population is statistically representative. A review enters the
+analytical `reviews` table only when its required fields are valid, it is the
+first valid occurrence of its review identifier, and it references an accepted
+business. Valid ratings at both endpoints are retained. There is no outlier rule
+or minimum-volume threshold.
+
+Optional business values are allowed to be missing because rejecting an entire
+business for absent geography or categories could create unnecessary selection.
+Invalid optional source aggregates become `NULL` with warnings. Required review
+values are rejected because an unidentified review, an invalid rating, or an
+unknown date cannot support the planned rating and temporal analyses.
+
+## Duplicate and relationship policy
+
+Duplicate detection operates on normalized, schema-valid candidates and remains
+correct across processing batches. The earliest valid source line for an
+identifier is retained. Later identical occurrences are redundant; later
+conflicting occurrences are conservatively rejected rather than overwriting the
+first record. Both are counted separately. This deterministic rule avoids double
+counting but does not claim the first conflicting record is substantively true.
+
+Reviews referencing no accepted business are labeled orphaned and excluded by a
+DuckDB join. This preserves referential integrity and prevents reviews from
+entering business-level calculations without a corresponding analytical entity.
+Orphan counts remain visible in the quality report.
+
+## Quality-count interpretation
+
+Blank lines are counted but excluded from record denominators. Every nonblank
+line is exactly one accepted or rejected record attempt, so these totals
+reconcile. A record may violate several schema rules; reason-code counters may
+therefore overlap and must not be summed as a rejected-record total. Synthetic
+fixture rates test the implementation and must not be presented as Yelp research
+results.
+
+## Separation from statistical analysis
+
+Phase 2A does not rank businesses, calculate review-derived averages, estimate
+uncertainty, or compare methods. Source aggregates are stored separately rather
+than treated as ground truth. Later research must define its analytical review
+population, examine selection and coverage, and compute metrics from the reviews
+actually included under that definition.
+

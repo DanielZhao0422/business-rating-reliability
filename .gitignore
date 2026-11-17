@@ -33,6 +33,10 @@ data/processed/*
 data/sample/*
 !data/sample/.gitkeep
 !data/sample/README.md
+!data/sample/synthetic_businesses.jsonl
+!data/sample/synthetic_reviews.jsonl
+!data/sample/empty_businesses.jsonl
+!data/sample/empty_reviews.jsonl
 
 # Notebook state
 .ipynb_checkpoints/

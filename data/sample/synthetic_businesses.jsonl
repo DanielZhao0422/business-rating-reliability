@@ -1,0 +1,12 @@
+{"business_id":"biz-001","name":"Northstar Bakery","city":"Exampleton","state":"PA","categories":"Bakeries, Coffee & Tea","stars":4.5,"review_count":12}
+{"business_id":"biz-002","name":"Copper Kettle Books","city":"Sample City","state":"OH","categories":"Bookstores","stars":3.0,"review_count":2}
+{"business_id":"biz-003","name":"Juniper Bicycle Repair"}
+{"business_id":"biz-001","name":"Northstar Bakery","city":"Exampleton","state":"PA","categories":"Bakeries, Coffee & Tea","stars":4.5,"review_count":12}
+{"business_id":"biz-002","name":"Copper Kettle Books - Annex","city":"Sample City","state":"OH","categories":"Bookstores","stars":3.5,"review_count":3}
+{"name":"Missing Identifier Cafe","city":"Exampleton","state":"PA","categories":"Cafes","stars":4.0,"review_count":1}
+{"business_id":"broken-json"
+
+["not", "an", "object"]
+{"business_id":"biz-004","name":"Lighthouse Tailoring","city":"Demo Bay","categories":"Sewing & Alterations","stars":7,"review_count":-1}
+42
+{"business_id":"biz-005","name":"Maple Street Florist","city":"Fiction Falls","state":"VA","categories":"Florists","stars":1.0,"review_count":0}
