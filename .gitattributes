@@ -1,0 +1,3 @@
+# Preserve the bytes recorded in research and Power BI manifests.
+/config/statistical_protocol.toml text eol=lf
+/config/powerbi_export_spec.toml text eol=lf

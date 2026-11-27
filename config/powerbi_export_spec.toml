@@ -1,0 +1,268 @@
+spec_version = "1.1.0"
+phase = "4B-1"
+status = "implemented_local_export_contract"
+format = "csv"
+encoding = "utf-8-sig"
+delimiter = ","
+line_ending = "crlf"
+null_token = ""
+date_format = "yyyy-MM-dd"
+datetime_format = "yyyy-MM-ddTHH:mm:ss"
+decimal_separator = "."
+output_directory = "reports/local/powerbi"
+primary_cutoff = 2018-01-01
+protocol_path = "config/statistical_protocol.toml"
+phase3b_directory = "reports/local/statistical_analysis"
+phase3c_directory = "reports/local/phase3c"
+
+[privacy]
+seller_key_policy = "hmac_sha256_truncated_32_hex"
+seller_key_secret_source = "local_environment_POWERBI_SELLER_KEY_SECRET"
+export_source_seller_id = false
+export_order_id = false
+export_review_id = false
+export_customer_id = false
+export_review_text = false
+real_data_outputs_git_ignored = true
+
+[refresh]
+import_mode = true
+power_bi_service_required = false
+overwrite_requires_flag = true
+stage_before_replace = true
+write_manifest = true
+write_schema_report = true
+
+[[tables]]
+name = "dim_method"
+file = "dim_method.csv"
+grain = "one_row_per_rating_method"
+primary_key = ["method_key"]
+source = "phase4b_static_dimension"
+
+[[tables]]
+name = "dim_review_volume"
+file = "dim_review_volume.csv"
+grain = "one_row_per_locked_historical_volume_band"
+primary_key = ["volume_group_key"]
+source = "config_statistical_protocol"
+
+[[tables]]
+name = "dim_scenario"
+file = "dim_scenario.csv"
+grain = "one_row_per_sensitivity_scenario"
+primary_key = ["scenario_key"]
+source = "phase3c_sensitivity_artifacts"
+
+[[tables]]
+name = "dim_seller"
+file = "dim_seller.csv"
+grain = "one_row_per_historical_seller"
+primary_key = ["seller_key"]
+source = "duckdb_historical_rating_observations"
+
+[[tables]]
+name = "fact_seller_estimate"
+file = "fact_seller_estimate.csv"
+grain = "one_row_per_historical_seller_per_rating_method"
+primary_key = ["seller_key", "method_key"]
+source = "phase3b_recomputed_locked_model"
+
+[[tables]]
+name = "fact_seller_evaluation"
+file = "fact_seller_evaluation.csv"
+grain = "one_row_per_primary_evaluation_seller"
+primary_key = ["seller_key"]
+source = "phase3b_recomputed_locked_evaluation"
+
+[[tables]]
+name = "fact_evaluation_volume"
+file = "fact_evaluation_volume.csv"
+grain = "one_row_per_grouping_basis_per_volume_band"
+primary_key = ["group_basis", "volume_group_key"]
+source = "phase3b_evaluation_by_volume_csv"
+
+[[tables]]
+name = "fact_ranking_summary"
+file = "fact_ranking_summary.csv"
+grain = "one_row_per_locked_top_k"
+primary_key = ["top_k"]
+source = "phase3b_and_phase3c_ranking_json"
+
+[[tables]]
+name = "fact_sensitivity_scenario"
+file = "fact_sensitivity_scenario.csv"
+grain = "one_row_per_sensitivity_scenario"
+primary_key = ["scenario_key"]
+source = "phase3c_sensitivity_csvs"
+
+[[tables]]
+name = "fact_calibration"
+file = "fact_calibration.csv"
+grain = "one_row_per_calibration_dimension_per_group"
+primary_key = ["calibration_dimension", "calibration_group"]
+source = "phase3c_calibration_diagnostics_csv"
+
+[[tables]]
+name = "fact_seller_operational"
+file = "fact_seller_operational.csv"
+grain = "one_row_per_historical_seller_with_forward_operational_orders"
+primary_key = ["seller_key"]
+source = "duckdb_operational_features_and_phase3c_rules"
+
+[[tables]]
+name = "fact_operational_status"
+file = "fact_operational_status.csv"
+grain = "one_row_per_forward_cohort_fulfillment_status"
+primary_key = ["order_status"]
+source = "phase3c_population_and_missingness_json"
+
+[[tables]]
+name = "fact_operational_association"
+file = "fact_operational_association.csv"
+grain = "one_row_per_rating_method_per_operational_outcome"
+primary_key = ["method_key", "outcome_key"]
+source = "phase3c_operational_associations_csv"
+
+[[tables]]
+name = "fact_operational_quartile"
+file = "fact_operational_quartile.csv"
+grain = "one_row_per_rating_method_per_rating_quartile"
+primary_key = ["method_key", "quartile_key"]
+source = "phase3c_operational_associations_csv"
+
+[[tables]]
+name = "fact_study_summary"
+file = "fact_study_summary.csv"
+grain = "one_row_per_fixed_study_metric"
+primary_key = ["metric_key"]
+source = "phase2c_phase3b_phase3c_verified_artifacts"
+
+[[relationships]]
+from_table = "fact_seller_estimate"
+from_column = "seller_key"
+to_table = "dim_seller"
+to_column = "seller_key"
+cardinality = "many_to_one"
+cross_filter = "single"
+filter_direction = "to_table_to_from_table"
+
+[schemas.dim_method]
+columns = ["method_key", "method_label", "method_order", "method_description", "color_hex"]
+types = ["text", "text", "integer", "text", "text"]
+nullable = []
+
+[schemas.dim_review_volume]
+columns = ["volume_group_key", "lower_bound", "upper_bound", "sort_order", "display_label"]
+types = ["text", "integer", "integer", "integer", "text"]
+nullable = ["upper_bound"]
+
+[schemas.dim_scenario]
+columns = ["scenario_key", "scenario_family", "scenario_label", "classification", "is_primary", "is_prespecified_summary", "cutoff", "sort_order", "interpretation_note"]
+types = ["text", "text", "text", "text", "boolean", "boolean", "date", "integer", "text"]
+nullable = ["cutoff"]
+
+[schemas.dim_seller]
+columns = ["seller_key", "seller_label", "historical_review_count", "volume_group_key", "has_evaluation_rating", "has_forward_operational_order"]
+types = ["text", "text", "integer", "text", "boolean", "boolean"]
+nullable = []
+
+[schemas.fact_seller_estimate]
+columns = ["seller_key", "method_key", "estimate", "reference_mean", "prior_strength", "adjustment_signed", "adjustment_absolute", "expected_rating_interval_lower", "expected_rating_interval_upper", "average_rank", "top_10_probability", "top_25_probability", "top_50_probability", "ranking_universe"]
+types = ["text", "text", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "text"]
+nullable = ["reference_mean", "prior_strength", "expected_rating_interval_lower", "expected_rating_interval_upper", "average_rank", "top_10_probability", "top_25_probability", "top_50_probability", "ranking_universe"]
+
+[schemas.fact_seller_evaluation]
+columns = ["seller_key", "evaluation_review_count", "evaluation_mean_rating", "raw_estimate", "adjusted_estimate", "raw_error", "adjusted_error", "raw_absolute_error", "adjusted_absolute_error", "raw_squared_error", "adjusted_squared_error", "predictive_interval_lower", "predictive_interval_upper", "predictive_covered", "predictive_miss_direction"]
+types = ["text", "integer", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "boolean", "text"]
+nullable = []
+
+[schemas.fact_evaluation_volume]
+columns = ["group_basis", "volume_group_key", "seller_count", "historical_rating_count", "evaluation_rating_count", "raw_mae", "adjusted_mae", "mae_improvement", "raw_rmse", "adjusted_rmse", "raw_review_weighted_mae", "adjusted_review_weighted_mae", "raw_review_weighted_rmse", "adjusted_review_weighted_rmse"]
+types = ["text", "text", "integer", "integer", "integer", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal"]
+nullable = []
+
+[schemas.fact_ranking_summary]
+columns = ["top_k", "seller_universe", "spearman", "kendall_tau_b", "mean_absolute_rank_change", "deterministic_overlap_count", "minimum_overlap_count", "maximum_overlap_count", "fractional_overlap_count", "boundary_tie_candidates", "sampled_pairs", "posterior_draws", "strong_ordering_support_90"]
+types = ["integer", "integer", "decimal", "decimal", "decimal", "integer", "integer", "integer", "decimal", "integer", "integer", "integer", "decimal"]
+nullable = []
+
+[schemas.fact_sensitivity_scenario]
+columns = ["scenario_key", "seller_count", "historical_rating_count", "evaluation_rating_count", "retained_proportion", "cutoff", "prior_strength", "reference_mean", "raw_mae", "adjusted_mae", "mae_improvement", "relative_mae_improvement", "raw_rmse", "adjusted_rmse", "bootstrap_lower", "bootstrap_upper", "direction"]
+types = ["text", "integer", "integer", "integer", "decimal", "date", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "decimal", "text"]
+nullable = ["cutoff", "prior_strength", "reference_mean", "bootstrap_lower", "bootstrap_upper"]
+
+[schemas.fact_calibration]
+columns = ["calibration_dimension", "calibration_group", "seller_units", "coverage", "coverage_standard_error", "mean_width", "median_width", "below_count", "inside_count", "above_count", "nominal_coverage", "draws", "note"]
+types = ["text", "text", "integer", "decimal", "decimal", "decimal", "decimal", "integer", "integer", "integer", "decimal", "integer", "text"]
+nullable = ["coverage_standard_error", "below_count", "inside_count", "above_count", "draws", "note"]
+
+[schemas.fact_seller_operational]
+columns = ["seller_key", "forward_order_count", "delivered_order_count", "evaluable_delivery_count", "late_delivery_count", "late_delivery_rate", "mean_delivery_delay_days", "mean_item_value", "mean_freight_value"]
+types = ["text", "integer", "integer", "integer", "integer", "decimal", "decimal", "decimal", "decimal"]
+nullable = ["late_delivery_rate", "mean_delivery_delay_days", "mean_item_value", "mean_freight_value"]
+
+[schemas.fact_operational_status]
+columns = ["order_status", "order_count", "order_proportion"]
+types = ["text", "integer", "decimal"]
+nullable = []
+
+[schemas.fact_operational_association]
+columns = ["method_key", "outcome_key", "seller_count", "order_count", "pearson", "spearman", "spearman_ci_lower", "spearman_ci_upper", "classification", "interpretation_note"]
+types = ["text", "text", "integer", "integer", "decimal", "decimal", "decimal", "decimal", "text", "text"]
+nullable = []
+
+[schemas.fact_operational_quartile]
+columns = ["method_key", "quartile_key", "seller_count", "evaluable_order_count", "late_order_count", "late_delivery_rate", "mean_seller_late_rate", "predictor_minimum", "predictor_maximum", "classification"]
+types = ["text", "text", "integer", "integer", "integer", "decimal", "decimal", "decimal", "decimal", "text"]
+nullable = []
+
+[schemas.fact_study_summary]
+columns = ["metric_key", "metric_label", "metric_value", "unit", "population_label", "classification", "source_artifact", "display_format", "interpretation_note"]
+types = ["text", "text", "decimal", "text", "text", "text", "text", "text", "text"]
+nullable = []
+
+[[relationships]]
+from_table = "fact_seller_estimate"
+from_column = "method_key"
+to_table = "dim_method"
+to_column = "method_key"
+cardinality = "many_to_one"
+cross_filter = "single"
+filter_direction = "to_table_to_from_table"
+
+[[relationships]]
+from_table = "fact_seller_evaluation"
+from_column = "seller_key"
+to_table = "dim_seller"
+to_column = "seller_key"
+cardinality = "many_to_one"
+cross_filter = "single"
+filter_direction = "to_table_to_from_table"
+
+[[relationships]]
+from_table = "fact_seller_operational"
+from_column = "seller_key"
+to_table = "dim_seller"
+to_column = "seller_key"
+cardinality = "many_to_one"
+cross_filter = "single"
+filter_direction = "to_table_to_from_table"
+
+[[relationships]]
+from_table = "fact_sensitivity_scenario"
+from_column = "scenario_key"
+to_table = "dim_scenario"
+to_column = "scenario_key"
+cardinality = "many_to_one"
+cross_filter = "single"
+filter_direction = "to_table_to_from_table"
+
+[[relationships]]
+from_table = "dim_seller"
+from_column = "volume_group_key"
+to_table = "dim_review_volume"
+to_column = "volume_group_key"
+cardinality = "many_to_one"
+cross_filter = "single"
+filter_direction = "to_table_to_from_table"

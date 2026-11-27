@@ -1,0 +1,63 @@
+# Amendment to v1.0.0: score availability uses the submitted answer timestamp.
+protocol_version = "1.1.0"
+phase = "3A"
+status = "amended_rating_availability"
+primary_cutoff = 2018-01-01
+rating_min = 1
+rating_max = 5
+historical_min_ratings = 1
+evaluation_min_ratings = 1
+primary_metric = "seller_equal_weight_mae"
+reference_mean = "pooled_historical_rating_mean"
+prior_strength_grid = [1, 2, 5, 10, 20, 50, 100]
+prior_strength_fallback = 10
+prior_tuning_metric = "seller_equal_weight_mae"
+prior_tie_tolerance = 1.0e-12
+prior_tie_break = "smallest_prior_strength"
+ranking_top_k = [10, 25, 50]
+ranking_tie_method = "average_rank"
+top_k_tie_break = "estimate_desc_then_seller_id_asc"
+interval_level = 0.95
+uncertainty_model = "empirical_bayes_dirichlet_categorical"
+posterior_draws = 20000
+bootstrap_resamples = 2000
+bootstrap_interval = "paired_seller_percentile"
+random_seed = 42
+exploratory_fdr_level = 0.05
+subgroup_minimum_sellers = 30
+subgroup_minimum_orders = 100
+historical_volume_groups = ["1-4", "5-9", "10-19", "20-49", "50+"]
+evaluation_volume_groups = ["1-4", "5-9", "10-19", "20-49", "50+"]
+secondary_evaluation_min_ratings = [5, 10]
+sensitivity_historical_min_ratings = [1, 5, 10, 20]
+alternative_cutoffs = [2017-07-01, 2018-02-03, 2018-04-01]
+
+[[internal_validation_folds]]
+name = "2017_q3"
+training_end_exclusive = 2017-07-01
+validation_start_inclusive = 2017-07-01
+validation_end_exclusive = 2017-10-01
+
+[[internal_validation_folds]]
+name = "2017_q4"
+training_end_exclusive = 2017-10-01
+validation_start_inclusive = 2017-10-01
+validation_end_exclusive = 2018-01-01
+
+[tuning_adequacy]
+minimum_sellers_per_fold = 50
+minimum_seller_fold_units = 200
+
+[method_comparison]
+contrast = "raw_mae_minus_adjusted_mae"
+lower_is_better = false
+bootstrap_unit = "seller"
+preserve_pairing = true
+
+[uncertainty_calibration]
+primary_target = "future_sample_mean_posterior_predictive_interval"
+secondary_targets = [
+  "single_future_rating_posterior_predictive_interval",
+  "posterior_expected_rating_interval_width",
+]
+

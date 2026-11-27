@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Independent research on rating reliability, review volume, and what seller averages can tell us about later customer experiences.">
+<title>Can We Trust Marketplace Seller Ratings? | Daniel Zhao</title>
+<link rel="stylesheet" href="assets/styles.css">
+<script src="assets/interactive.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead">
+  <div class="shell topbar">
+    <a class="brand" href="#main"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>Daniel Zhao</a>
+    <nav aria-label="Case study">
+      <a href="#overview">Overview</a><a href="#method">Methodology</a><a href="#findings">Findings</a><a href="#power-bi">Power BI</a><a href="#resources">Resources</a>
+    </nav>
+  </div>
+</header>
+<main id="main" tabindex="-1">
+  <section class="hero shell" id="overview" aria-labelledby="title" tabindex="-1">
+    <div class="hero-copy">
+      <p class="eyebrow">Business Rating Reliability &amp; Decision Intelligence</p>
+      <h1 id="title">Can We Trust Marketplace Seller Ratings?</h1>
+      <p class="lede">Two sellers can both average five stars. The evidence behind those averages can be very different.</p>
+      <p class="byline"><strong>By Daniel Zhao.</strong> I used SQL, Python and statistical modeling to test whether accounting for review volume improves predictions of later customer ratings.</p>
+      <div class="hero-result">
+        <strong>22.3%</strong>
+        <span>lower rating prediction error<small>Seller-equal MAE versus raw historical averages</small></span>
+      </div>
+      <div class="hero-links"><a class="button" href="#findings">Explore the findings</a><a href="#method">See the methodology</a></div>
+    </div>
+    <figure class="hero-figure">
+      <figcaption><span class="eyebrow">Historical holdout</span><h2>Adjusted ratings were closer to later averages</h2><p>Mean absolute error in stars · lower is better</p></figcaption>
+      <div class="summary-chart" role="img" aria-label="Raw historical average, 0.694 stars MAE. Adjusted estimate, 0.539 stars MAE. Both bars start at zero.">
+        <div aria-hidden="true" class="summary-row"><span>Raw average</span><div class="summary-track"><b class="raw" style="--size:86.711%"></b></div><strong>0.694</strong></div>
+        <div aria-hidden="true" class="summary-row"><span>Adjusted estimate</span><div class="summary-track"><b class="adjusted" style="--size:67.365%"></b></div><strong>0.539</strong></div>
+        <div aria-hidden="true" class="summary-axis"><b>0</b><b>0.2</b><b>0.4</b><b>0.6</b><b>0.8</b></div>
+      </div>
+      <p class="figure-note">Mean difference <strong>0.155 stars</strong><br>95% paired bootstrap interval <strong>0.124–0.186</strong></p>
+    </figure>
+    <div class="study-strip">
+      <div><strong>95,245</strong><span>eligible ratings</span></div>
+      <div><strong>1,098</strong><span>paired evaluation sellers</span></div>
+      <div><strong>SQL · Python · Power BI</strong><span>Temporal validation, uncertainty and visual analysis</span></div>
+    </div>
+  </section>
+
+  <section class="section shell split" id="motivation">
+    <div>
+      <p class="eyebrow">Motivation</p>
+      <h2>Same rating. Different evidence.</h2>
+      <p>Previous work evaluating businesses and customer reviews inspired this independent study. When a marketplace gives two sellers the same average, how much confidence should a reader put in each score?</p>
+      <p>A small number of reviews can move an average substantially. Review counts help a reader see how much evidence each average carries.</p>
+    </div>
+    <figure class="comparison">
+      <figcaption class="eyebrow">Illustrative sellers</figcaption>
+      <div class="seller"><span class="stars" aria-hidden="true">★★★★★</span><strong>5.0 stars</strong><span>2 reviews</span></div>
+      <div class="seller"><span class="stars" aria-hidden="true">★★★★★</span><strong>5.0 stars</strong><span>500 reviews</span></div>
+    </figure>
+  </section>
+
+  <section class="section tint" id="method" tabindex="-1">
+  <div class="shell">
+    <div class="split">
+      <div>
+        <p class="eyebrow">Data and method</p>
+        <h2>From order reviews to seller evidence</h2>
+        <p>I used Olist’s Brazilian marketplace dataset. Its nine relational files cover orders, items, reviews, sellers, products, customers, geolocation, payments, and category translation.</p>
+        <p>A review describes an order experience. If multiple distinct sellers fulfil an order, the score cannot reliably be attributed to any one of them. I kept unambiguous single-seller orders with one review row, a unique review ID, a valid score, and a valid answer time. Repeated review rows and ambiguous IDs were excluded.</p>
+      </div>
+      <ol class="process" aria-label="Rating attribution and historical split">
+        <li><strong>Audit and link</strong><span>Inspect keys and join order, item, review, and seller records in DuckDB.</span></li>
+        <li><strong>Build the rating population</strong><span>95,245 eligible ratings across 3,064 distinct sellers.</span></li>
+        <li><strong>Split by score availability</strong><span>40,321 historical ratings across 1,741 sellers. 54,924 subsequent ratings.</span></li>
+      </ol>
+    </div>
+    <div class="workflow">
+      <h3>Analytical workflow</h3>
+      <ol class="workflow-steps" role="list">
+        <li><strong>Nine Olist CSVs</strong><span>Audit the relational source files</span></li>
+        <li><strong>SQL + DuckDB</strong><span>Attribute ratings and build analysis tables</span></li>
+        <li><strong>Python</strong><span>Fit shrinkage and evaluate the holdout</span></li>
+        <li><strong>Power BI + case study</strong><span>Report in Desktop and share aggregate findings here</span></li>
+      </ol>
+    </div>
+    <div class="split model">
+      <div>
+        <h3>Give sparse averages less weight</h3>
+        <p>The raw estimate is a seller’s historical mean. The adjusted estimate blends it with the review-pooled historical average. The seller’s contribution grows with its review count. This is empirical-Bayes-style shrinkage.</p>
+      </div>
+      <div class="formula">
+        <p class="equation" aria-label="Adjusted rating equals n times r bar plus m times mu, divided by n plus m.">r̂ = (n × r̄ + m × μ) / (n + m)</p>
+        <p><b>n</b> = historical review count · <b>r̄</b> = seller’s raw mean<br><b>m</b> = shrinkage strength (20) · <b>μ</b> = pooled mean (4.153047 stars)</p>
+      </div>
+    </div>
+    <div class="demo" id="calculator">
+      <div class="demo-copy">
+        <p class="eyebrow">Hypothetical demonstration</p>
+        <h3>See how the estimate changes</h3>
+        <p>Change the raw average or use the review-count presets to see how the estimate shifts with the locked study settings.</p>
+        <p class="subtle">Synthetic inputs only. The output is a mathematical example. It provides neither an interval nor a prediction service for real sellers.</p>
+      </div>
+      <form id="shrinkage" data-reference="4.153046799434538" data-strength="20">
+        <div class="inputs">
+          <label for="rating">Raw rating (1–5 stars)<input id="rating" name="rating" type="number" min="1" max="5" step="0.01" value="5" required></label>
+          <label for="reviews">Historical review count<input id="reviews" name="reviews" type="number" min="1" max="10000" step="1" value="2" required></label>
+        </div>
+        <fieldset class="presets" id="review-presets" hidden>
+          <legend>Review count presets</legend>
+          <div class="preset-options">
+            <button class="quiet" type="button" data-reviews="2" aria-label="Set review count to 2">2</button>
+            <button class="quiet" type="button" data-reviews="10" aria-label="Set review count to 10">10</button>
+            <button class="quiet" type="button" data-reviews="50" aria-label="Set review count to 50">50</button>
+            <button class="quiet" type="button" data-reviews="500" aria-label="Set review count to 500">500</button>
+          </div>
+        </fieldset>
+        <div class="buttons"><button type="submit">Calculate</button><button class="quiet" type="reset">Reset</button></div>
+        <div class="demo-results" id="demo-results" role="status" aria-live="polite" aria-atomic="true">
+          <div><span>Raw average</span><strong id="demo-raw">5.00</strong></div>
+          <div><span>Adjusted estimate</span><strong id="demo-adjusted">4.23</strong></div>
+          <div class="weighting">
+            <div class="weight-bar" aria-hidden="true"></div>
+            <p class="weight-labels"><span class="seller-weight">Seller evidence <b id="seller-weight">9.1%</b></span><span class="reference-weight">Pooled reference <b id="reference-weight">90.9%</b></span></p>
+          </div>
+        </div>
+        <noscript><p>Enable JavaScript to change the example. The displayed result uses two reviews at 5.00 stars.</p></noscript>
+      </form>
+    </div>
+  </div>
+  </section>
+
+  <section class="section shell split" id="evaluation">
+    <div>
+      <p class="eyebrow">Historical evaluation</p>
+      <h2>Only use scores that were available at the time</h2>
+      <p>The historical period ends before <time datetime="2018-01-01">January 1, 2018</time>. Review answer timestamps are a proxy for when scores became available. The initial design split on survey creation, which could include scores answered after the cutoff in historical estimates. The corrected design uses answer time consistently.</p>
+      <p><a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/docs/temporal_availability_amendment.md">Read the temporal correction</a></p>
+    </div>
+    <div class="evaluation-note">
+      <h3>Train, select, then evaluate</h3>
+      <p><strong>Before the cutoff.</strong> Two expanding chronological 2017 folds selected strength 20. The primary estimates then used all eligible historical answers.</p>
+      <p><strong>After the cutoff.</strong> Compare both estimates with subsequent observed averages for the same 1,098 sellers. Each seller contributes one absolute error equally. MAE expresses the typical magnitude of those errors in stars.</p>
+    </div>
+  </section>
+
+  <section class="section tint" id="findings" tabindex="-1">
+  <div class="shell">
+    <p class="eyebrow">Primary finding</p>
+    <h2>Adjustment helped most when reviews were scarce</h2>
+    <p class="measure">For sellers with 1–4 historical reviews, MAE fell from <strong>1.062 to 0.721 stars</strong>, a <strong>32.1% reduction</strong>. The gain was much smaller for sellers with 50 or more reviews.</p>
+    <figure class="panel">
+      <figcaption><h3>Prediction error by historical review volume</h3><p>Seller-equal MAE in stars · bars begin at zero</p></figcaption>
+      <div class="band-axis" aria-hidden="true"><span>0</span><span>0.3</span><span>0.6</span><span>0.9</span><span>1.2</span></div>
+      <table class="band-table">
+        <thead><tr><th scope="col">Historical reviews</th><th scope="col">Method and MAE (stars)</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">1–4</th><td><div class="band-line"><span>Raw</span><div class="band-track" aria-hidden="true"><b class="raw" style="--size:88.486%"></b></div><strong>1.062</strong></div><div class="band-line"><span>Adjusted</span><div class="band-track" aria-hidden="true"><b class="adjusted" style="--size:60.065%"></b></div><strong>0.721</strong></div></td></tr>
+          <tr><th scope="row">5–9</th><td><div class="band-line"><span>Raw</span><div class="band-track" aria-hidden="true"><b class="raw" style="--size:60.124%"></b></div><strong>0.721</strong></div><div class="band-line"><span>Adjusted</span><div class="band-track" aria-hidden="true"><b class="adjusted" style="--size:49.944%"></b></div><strong>0.599</strong></div></td></tr>
+          <tr><th scope="row">10–19</th><td><div class="band-line"><span>Raw</span><div class="band-track" aria-hidden="true"><b class="raw" style="--size:45.489%"></b></div><strong>0.546</strong></div><div class="band-line"><span>Adjusted</span><div class="band-track" aria-hidden="true"><b class="adjusted" style="--size:38.979%"></b></div><strong>0.468</strong></div></td></tr>
+          <tr><th scope="row">20–49</th><td><div class="band-line"><span>Raw</span><div class="band-track" aria-hidden="true"><b class="raw" style="--size:38.376%"></b></div><strong>0.461</strong></div><div class="band-line"><span>Adjusted</span><div class="band-track" aria-hidden="true"><b class="adjusted" style="--size:35.350%"></b></div><strong>0.424</strong></div></td></tr>
+          <tr><th scope="row">50+</th><td><div class="band-line"><span>Raw</span><div class="band-track" aria-hidden="true"><b class="raw" style="--size:25.954%"></b></div><strong>0.311</strong></div><div class="band-line"><span>Adjusted</span><div class="band-track" aria-hidden="true"><b class="adjusted" style="--size:25.165%"></b></div><strong>0.302</strong></div></td></tr>
+        </tbody>
+      </table>
+    </figure>
+    <p class="takeaway"><strong>Across the paired cohort</strong> · The absolute reduction was <strong>0.155 stars</strong>, with a 95% paired seller-bootstrap interval of <strong>0.124–0.186 stars</strong>. Resampling each seller’s two errors together preserves their pairing.</p>
+  </div>
+  </section>
+
+  <section class="section shell split" id="rankings">
+    <div>
+      <p class="eyebrow">Ranking reliability</p>
+      <h2>An exact rank can hide a tie</h2>
+      <p><strong>816</strong> of the 1,098 paired sellers shared a raw rating with another seller. The largest tie covered <strong>142 sellers</strong>. Mean absolute movement after adjustment was about <strong>144 positions</strong>.</p>
+      <p>Accounting for review volume can materially change who makes a shortlist. The raw and adjusted Top 10 had zero sellers in common under every feasible ordering of raw-rating ties at the cutoff. The comparison measures how sensitive the shortlist is to the ranking method. Whether either list identifies better sellers remains an open question.</p>
+      <p>Spearman agreement was 0.828 and Kendall τ-b was 0.641.</p>
+    </div>
+    <div class="panel">
+      <table><caption>Feasible shortlist overlap</caption>
+        <thead><tr><th scope="col">Shortlist size</th><th scope="col">Sellers in both lists</th></tr></thead>
+        <tbody><tr><th scope="row">Top 10</th><td>0–0</td></tr><tr><th scope="row">Top 25</th><td>0–1</td></tr><tr><th scope="row">Top 50</th><td>0–1</td></tr></tbody>
+      </table>
+      <p class="figure-note">Ranges allow for different orderings within a raw-rating tie at the cutoff. They describe shared places in the two shortlists.</p>
+    </div>
+  </section>
+
+  <section class="section tint" id="uncertainty">
+    <div class="shell split">
+      <div>
+        <p class="eyebrow">Robustness and uncertainty</p>
+        <h2>Prediction intervals missed their target</h2>
+        <p>The bootstrap interval describes uncertainty in the <strong>aggregate MAE improvement</strong>. In the local report, model-conditional credible intervals describe uncertainty in a <strong>seller’s expected rating</strong>.</p>
+        <p>Predictive coverage asks how often intervals contained <strong>later observed seller averages</strong>, conditional on the realized subsequent review count. Reported coverage fell below 95%, especially in the 50+ historical review band.</p>
+        <p>Final-period sensitivity varied assumptions such as strength, cutoffs and minimum counts. The protocol identifies preplanned, supplemental and post hoc analyses. <a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/docs/phase3c_methodology.md">See robustness methods</a></p>
+      </div>
+      <figure class="panel coverage">
+        <figcaption><h3>Observed predictive coverage</h3><p>Share of later seller means inside their intervals</p></figcaption>
+        <table><thead><tr><th scope="col">Historical reviews</th><th scope="col">Observed</th></tr></thead>
+          <tbody><tr><th scope="row">Overall</th><td><strong>92.7%</strong></td></tr>
+          <tr><th scope="row">1–4</th><td>96.2%</td></tr>
+          <tr><th scope="row">5–9</th><td>93.2%</td></tr>
+          <tr><th scope="row">10–19</th><td>94.4%</td></tr>
+          <tr><th scope="row">20–49</th><td>90.4%</td></tr>
+          <tr class="low"><th scope="row">50+</th><td>85.6%</td></tr></tbody>
+          <tfoot><tr><th scope="row">Nominal target</th><td>95%</td></tr></tfoot>
+        </table>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section shell" id="operations">
+    <p class="eyebrow">Operational findings</p>
+    <h2>Monitor fulfillment directly</h2>
+    <p class="measure">Historical seller ratings had weak, noncausal associations with later lateness across <strong>1,034 sellers</strong>. The adjusted-rating interval crosses zero.</p>
+    <figure class="panel forest">
+      <figcaption><h3>Historical rating and later late-delivery rate</h3><p>Spearman correlation with 95% intervals. Zoomed near zero on the full −1 to +1 scale.</p></figcaption>
+      <div class="forest-chart" role="img" aria-label="Raw −0.084, 95% interval −0.150 to −0.017. Adjusted −0.042, 95% interval −0.102 to 0.019. The adjusted interval crosses zero.">
+        <div class="forest-row raw-series" aria-hidden="true"><strong>Raw average</strong><div class="forest-track" style="--series:var(--raw);--lo:4.782%;--hi:71.398%;--point:38.244%"><i class="interval"></i><i class="dot"></i></div><p><b>−0.084</b> [−0.150, −0.017]</p></div>
+          <div class="forest-row adjusted-series" aria-hidden="true"><strong>Adjusted estimate</strong><div class="forest-track" style="--series:var(--adj);--lo:29.155%;--hi:89.523%;--point:59.109%"><i class="interval"></i><i class="dot"></i></div><p><b>−0.042</b> [−0.102, 0.019]</p></div>
+        <div aria-hidden="true" class="forest-axis"><span>−0.16</span><span>−0.12</span><span>−0.08</span><span>−0.04</span><span>0</span><span>+0.04</span></div>
+      </div>
+      <p class="figure-note">Operational order scope · 38,518 forward orders, 37,873 evaluable deliveries, and 3,639 late deliveries (9.6% of evaluable deliveries).</p>
+    </figure>
+  </section>
+
+  <section class="section tint" id="power-bi" tabindex="-1">
+    <div class="shell">
+      <p class="eyebrow">Native Power BI</p>
+      <h2>One report, five analytical views</h2>
+      <p class="measure">I built five native Power BI Desktop pages around a relational model with six active relationships. Power Query imports and types the validated CSV exports, and DAX drives the study KPIs, filtered views and tooltips.</p>
+      <p class="measure"><strong>Overview</strong> compares holdout error by review volume. <strong>Ratings</strong> shows seller evidence and rating uncertainty. <strong>Rankings</strong> examines ties and shortlist stability. <strong>Validation</strong> covers bootstrap uncertainty, predictive coverage and sensitivity. <strong>Operations</strong> compares ratings with later fulfillment.</p>
+      <p class="measure">The two captures below show aggregate results from the report. I keep the complete interactive report and its populated model locally.</p>
+      <div class="report-images">
+        <figure><a class="report-image-link" href="assets/images/power-bi-overview.png" aria-labelledby="overview-link" aria-describedby="overview-capture"><img id="overview-capture" src="assets/images/power-bi-overview.png" width="1016" height="601" loading="lazy" alt="Power BI Overview showing 22.3% lower seller-equal MAE, with the largest decrease in the 1–4 review band."><span id="overview-link">View Overview at full size</span></a></figure>
+        <figure><a class="report-image-link" href="assets/images/power-bi-validation.png" aria-labelledby="validation-link" aria-describedby="validation-capture"><img id="validation-capture" src="assets/images/power-bi-validation.png" width="1016" height="601" loading="lazy" alt="Power BI Validation showing the paired bootstrap interval, the selected prior strength, and lower-than-nominal predictive coverage."><span id="validation-link">View Validation at full size</span></a></figure>
+      </div>
+      <p><a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/docs/powerbi_import_guide.md">Power BI implementation and refresh</a> · <a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/docs/powerbi_data_model.md">Model and relationships</a></p>
+    </div>
+  </section>
+
+  <section class="section shell split" id="conclusions">
+    <div>
+      <p class="eyebrow">Decision implications</p>
+      <h2>Give the rating its context</h2>
+      <ul class="recommendations"><li>Show review volume with seller averages.</li><li>Communicate rating uncertainty and explain ties.</li><li>Use direct measures for delivery performance.</li></ul>
+    </div>
+    <div class="limitations">
+      <h3>Study limits</h3>
+      <p>The findings come from one historical marketplace and a paired cohort with eligible ratings in both periods. Later observed averages are noisy measures of customer experience. Predictive intervals undercovered and operational associations were noncausal. Commercial impact was outside the evaluation.</p>
+    </div>
+  </section>
+</main>
+
+<footer id="resources" tabindex="-1">
+  <div class="shell">
+    <h2>Technical resources</h2>
+    <div class="resource-links">
+      <a href="https://github.com/DanielZhao0422/business-rating-reliability">Repository</a>
+      <a href="https://github.com/DanielZhao0422/business-rating-reliability/tree/main/sql/olist">SQL implementation</a>
+      <a href="https://github.com/DanielZhao0422/business-rating-reliability/tree/main/src/rating_reliability">Python implementation</a>
+      <a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/docs/architecture.md">Architecture</a>
+      <a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/docs/methodology.md">Research methodology</a>
+      <a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/docs/reproducibility.md">Reproduction guide</a>
+      <a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/docs/data_attribution.md">Data credit and terms</a>
+    </div>
+    <p>Independent portfolio research by Daniel Zhao. Data source <a href="https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce">Brazilian E-Commerce Public Dataset by Olist</a>, listed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,111 +1,241 @@
 # Methodology
 
-This document defines the analytical concepts before data analysis begins. They
-are related, but they are not interchangeable measures.
+## Status and analytical scope
 
-## Observed average ratings
+Phase 1 baselines, Phase 2A synthetic ingestion, reusable profiling, the Olist
+suitability audit, Phase 2C analytical table materialization, the Phase 3A
+statistical protocol, Phase 3B historical evaluation, Phase 3C robustness and
+operational research, and Phase 4A Power BI architecture are complete. Phase 4B
+dashboard construction remains planned. The complete prespecified protocol is in
+[`docs/statistical_analysis_plan.md`](statistical_analysis_plan.md), with
+machine-readable defaults in `config/statistical_protocol.toml`.
 
-The observed average is the arithmetic mean of a business's valid 1--5 ratings.
-It describes the center of the reviews currently observed. It does not account
-for how many reviews produced the mean, sampling or selection bias, time trends,
-or uncertainty. It is the primary transparent baseline.
+The study examines **customer order experience ratings associated with
+marketplace sellers**. "Seller rating" and "seller ranking" are convenient
+labels for summaries of these observations. They do not measure intrinsic seller
+quality: an order rating may reflect product quality, expectations, delivery,
+seller-related service, logistics providers, or marketplace processes.
 
-## Adjusted ratings
+## Seller-associated observation definition
 
-The Phase 1 adjusted rating is
+One usable rating observation must have:
+
+1. exactly one distinct seller among all items in the order;
+2. exactly one review row for the order;
+3. a review identifier linked to only one order;
+4. valid order and seller identifiers;
+5. an integer rating from 1 through 5; and
+6. a valid survey creation timestamp and a finite `review_answer_timestamp`
+   equal to or later than creation.
+
+The order ID is the analytical observation key because Olist `review_id` is not
+globally unique. Multiple items from the same seller do not make an order
+multi-seller. The Phase 2C `seller_rating_observations` table implements this
+rule with 95,245 usable observations for 3,064 sellers. The complete population
+flow and exclusions remain available in `order_eligibility`.
+
+## Analytical concepts
+
+These concepts are related but not interchangeable:
+
+- **Reliability** concerns how defensible and repeatable a comparison is given
+  its evidence volume, variability, and assumptions.
+- **Statistical uncertainty** quantifies the range or variability compatible
+  with the observed sample and model assumptions.
+- **Predictive validity** evaluates how well an estimate anticipates later
+  observed ratings under a prespecified temporal design.
+- **Ranking stability** measures how relative positions change with new data,
+  resampling, time windows, or defensible modeling choices.
+- **Operational association** describes relationships between rating estimates
+  and delivery or fulfillment measures without establishing causation.
+
+A narrower interval is not automatically more accurate, a stable rank is not
+automatically fair, and better future-rating prediction does not establish true
+seller quality.
+
+## Finalized Phase 3 statistical methods
+
+### Arithmetic-mean baseline
+
+For seller $j$, the observed average is the arithmetic mean of eligible 1--5
+ratings. It is transparent but ignores how much evidence produced the mean. The
+existing `arithmetic_mean_rating` implementation remains the baseline.
+
+### Empirical-Bayes-style adjusted rating
+
+The existing shrinkage form is
 
 \[
-\frac{n\bar{x} + m\mu}{n + m},
+\frac{n_j\bar{x}_j + m\mu}{n_j + m},
 \]
 
-where \(n\) is the observed review count, \(\bar{x}\) is the observed mean,
-\(\mu\) is a documented reference mean, and \(m > 0\) is the prior strength.
-This is an empirical-Bayes-style shrinkage estimator: small samples move more
-toward the reference, while large samples remain closer to their observed mean.
-The choices of reference population and prior strength require justification and
-sensitivity analysis. An adjusted rating is a point estimate, not an uncertainty
-interval.
+where $n_j$ is the seller's usable rating count, $\bar{x}_j$ is the observed
+mean, $\mu$ is a documented reference mean, and $m > 0$ is the prior
+strength. Small samples shrink more toward the reference; large samples remain
+closer to their observed means. The reference population and prior strength must
+be estimated or selected without future leakage and tested through sensitivity
+analysis. This is a point estimator, not an uncertainty interval.
 
-## Statistical uncertainty
+### Uncertainty
 
-Statistical uncertainty describes the range of values compatible with the data
-and stated modeling assumptions. A later phase may use confidence intervals,
-posterior intervals, or bootstrap intervals after their assumptions are made
-explicit. Interval width and coverage answer different questions from the
-adjusted point score. Reviews may also be non-independent and non-representative,
-so a narrow model-based interval does not remove selection bias.
+The primary uncertainty model is a five-category empirical-Bayes Dirichlet
+model. Its prior category probabilities are the pooled historical category
+distribution and its concentration is the same tuned prior strength used by the
+adjusted estimator. Its posterior mean expected rating therefore equals the
+shrinkage point estimate. Equal-tailed 95% posterior credible intervals describe
+the model-based expected rating. Posterior predictive intervals for a later
+sample mean provide the primary observable calibration target. Credible and
+confidence intervals are not treated as interchangeable, and model-based
+uncertainty cannot correct review participation or population selection bias.
 
-## Business ranking stability
+### Ranking stability
 
-Ranking stability concerns whether relative positions persist when reviews are
-added, data are resampled, time windows change, or reasonable modeling choices
-change. It can be studied through rank correlations, top-k membership changes,
-or rank distributions. A stable ranking is not automatically accurate or fair,
-and a point estimate with a high value is not automatically stable.
+Implemented measures are Spearman correlation, Kendall tau-b, absolute rank
+movement, top-K overlap for K = 10, 25, and 50, and posterior-draw stability,
+all over a fixed method-comparison universe. Method disagreement, model-based
+rank uncertainty, and agreement with later observed rankings are reported
+separately in local Phase 3 artifacts.
 
-## Predictive or historical evaluation
+### Operational associations
 
-Evaluation asks whether a method performs well on data that were not used to
-construct its score. Reviews should be split in time order to avoid using future
-information. Candidate methods will be compared with simple, documented
-baselines using preselected outcomes and scoring rules. Evaluation may assess
-future aggregate ratings, calibration, error, or ranking behavior; each target
-must be defined before interpreting results. Predictive success does not by
-itself establish a causal explanation.
+Phase 3C compares historical raw and adjusted estimates with later delivery
+timeliness, fulfillment status, freight, order value, and relevant product
+information. One-row-per-order aggregation precedes category joins, missing
+delivery outcomes are not coded as on time, and outcome-specific denominators
+are reported. These analyses are descriptive or predictive associations. They
+account for time ordering and measured confounders where practical but are not
+causal.
 
-## Initial assumptions and limitations
+## Phase 3B implementation
 
-- Ratings are validated on an inclusive 1--5 numeric scale.
-- Phase 1 gives each observed rating equal weight and does not model time.
-- The reference mean and prior strength are inputs, not facts learned in Phase 1.
-- Yelp reviews are observational and may reflect selection, platform, survivorship,
-  geographic, and temporal biases.
-- Missingness, duplicate records, business closures, category definitions, and
-  changes in platform behavior require investigation before substantive claims.
+`rating_reliability.statistical_analysis` is the reproducible orchestrator.
+DuckDB performs time-bounded seller and category aggregation; NumPy performs
+vectorized estimation, Monte Carlo simulation, rank calculations, and paired
+bootstrap inference. The implementation:
 
-## Phase 2A ingestion population
+1. validates the Phase 2C tables, persistent quality checks, pipeline cutoff,
+   and independent historical/evaluation split;
+2. aggregates one deterministic row per seller with five category counts;
+3. estimates every fold-specific and final reference from training ratings only;
+4. selects prior strength from the locked grid with the locked adequacy fallback;
+5. verifies the Dirichlet posterior mean equals the shrinkage estimate;
+6. conditions predictive intervals on the realized later sample size without
+   reading later rating values into their construction;
+7. evaluates both methods over one paired seller universe;
+8. preserves seller pairing in bootstrap resampling; and
+9. stages all aggregate reports before safe local replacement.
 
-Ingestion establishes a technically valid relational population; it does not
-claim that population is statistically representative. A review enters the
-analytical `reviews` table only when its required fields are valid, it is the
-first valid occurrence of its review identifier, and it references an accepted
-business. Valid ratings at both endpoints are retained. There is no outlier rule
-or minimum-volume threshold.
+The zero-category implementation is a lower-dimensional Dirichlet over
+categories having positive pooled training probability. A zero-probability
+category stays exactly zero and is never passed as a concentration parameter to
+NumPy. This preserves the locked pooled reference and exact posterior-mean /
+shrinkage equivalence without adding an unplanned pseudocount.
 
-Optional business values are allowed to be missing because rejecting an entire
-business for absent geography or categories could create unnecessary selection.
-Invalid optional source aggregates become `NULL` with warnings. Required review
-values are rejected because an unidentified review, an invalid rating, or an
-unknown date cannot support the planned rating and temporal analyses.
+Credible-interval, predictive-interval, ranking, and bootstrap random streams
+are deterministic and recorded in reproducibility metadata. Seller-level scores,
+ranks, and identifiers are not exported.
 
-## Duplicate and relationship policy
+## Primary historical evaluation design
 
-Duplicate detection operates on normalized, schema-valid candidates and remains
-correct across processing batches. The earliest valid source line for an
-identifier is retained. Later identical occurrences are redundant; later
-conflicting occurrences are conservatively rejected rather than overwriting the
-first record. Both are counted separately. This deterministic rule avoids double
-counting but does not claim the first conflicting record is substantively true.
+The fixed primary cutoff is **January 1, 2018**:
 
-Reviews referencing no accepted business are labeled orphaned and excluded by a
-DuckDB join. This preserves referential integrity and prevents reviews from
-entering business-level calculations without a corresponding analytical entity.
-Orphan counts remain visible in the quality report.
+- historical period: `review_answer_timestamp < 2018-01-01`;
+- evaluation period: `review_answer_timestamp >= 2018-01-01`, through the last
+  eligible answer date.
 
-## Quality-count interpretation
+The original creation-date split counted 40,976 historical and 54,269 later
+ratings. The corrected answer-time split counts 40,321 historical and 54,924
+later ratings, 1,098 paired sellers, and 429 sellers with at least 10 ratings
+in each period. [Temporal availability amendment](temporal_availability_amendment.md) The cutoff has a simple calendar interpretation and sufficient
+two-period coverage. It was designated before statistical method comparison and
+was not selected for favorable results. Alternative cutoffs may be sensitivity
+analyses.
 
-Blank lines are counted but excluded from record denominators. Every nonblank
-line is exactly one accepted or rejected record attempt, so these totals
-reconcile. A record may violate several schema rules; reason-code counters may
-therefore overlap and must not be summed as a rejected-record total. Synthetic
-fixture rates test the implementation and must not be presented as Yelp research
-results.
+For every historical prediction:
 
-## Separation from statistical analysis
+- calculate seller estimates from pre-cutoff ratings only;
+- estimate pooled means, prior strength, hyperparameters, and other model
+  components using pre-cutoff information only;
+- determine historical eligibility without consulting later counts or outcomes;
+- keep evaluation ratings isolated until estimates and comparison rules are
+  fixed; and
+- treat later ratings as out-of-sample observations, not ground truth for
+  intrinsic quality.
 
-Phase 2A does not rank businesses, calculate review-derived averages, estimate
-uncertainty, or compare methods. Source aggregates are stored separately rather
-than treated as ground truth. Later research must define its analytical review
-population, examine selection and coverage, and compute metrics from the reviews
-actually included under that definition.
+The primary final metric is seller-equal MAE over sellers with at least one
+historical and one evaluation rating. Prior strength is selected only through
+pre-2018 expanding-window validation over the fixed grid 1, 2, 5, 10, 20, 50,
+and 100. Paired seller bootstrap intervals quantify raw MAE minus adjusted MAE.
+Positive improvement favors adjustment. Exact
+rules and deterministic fallbacks are fixed in the dedicated plan before Phase
+3B begins.
 
+## Selection and missing-data limitations
+
+Excluding multi-seller orders avoids assigning one order-level score to several
+sellers, but those orders differ from single-seller orders and their removal may
+change the analytical population. Excluding repeated or cross-order review
+identifiers is conservative but may also be selective. Invalid required records
+will be reported rather than silently discarded.
+
+Low-review-count sellers remain in descriptive work. Method-specific thresholds
+are permitted only when mathematically or evaluatively justified, with full
+population-flow counts and sensitivity analysis. No rating is removed merely
+because it is 1 or 5, and missing reviews are not imputed as positive or negative.
+
+Other limitations include review participation, marketplace selection,
+survivorship, category and geographic imbalance, changing platform conditions,
+and possible dependence among orders or reviews.
+
+## Completed supporting infrastructure
+
+Phase 2A's fictional Yelp-style JSONL pipeline established incremental reading,
+validation, deterministic duplicate handling, orphan exclusion, quality
+reporting, and safe DuckDB publication. It remains tested but is not presented
+as the implemented Olist adapter. The Olist audit reads the actual relational
+CSVs directly and preserves their source semantics.
+
+The audit verifies software and dataset suitability; it does not rank sellers or
+establish the effectiveness of shrinkage. Original Olist files and real-data
+outputs remain local while public use is conditional on the published CC
+BY-NC-SA 4.0 terms and unresolved underlying-rights considerations.
+
+Phase 2C verifies and materializes the eligible data population; it likewise
+does not calculate Phase 3 estimates or comparisons. Operational features that
+become known after purchase cannot be used as historical predictors before their
+availability.
+
+## Dashboard and reporting plan
+
+The Phase 4A Power BI specification defines:
+
+1. Marketplace Rating Overview
+2. Rating Reliability & Uncertainty
+3. Ranking Stability
+4. Historical Evaluation
+5. Delivery & Fulfillment Insights
+
+The Phase 4B dashboard should explain raw versus adjusted estimates, uncertainty, review-volume
+effects, robustness, out-of-sample outcomes, and operational associations. It
+will not become a generic revenue or marketplace sales dashboard.
+
+The implementation-ready model, KPI dictionary, wireframes, validation matrix,
+and local refresh plan are documented in the `powerbi_*` files under `docs/`.
+Phase 4A creates no populated export and no `.pbix`.
+
+## Phase 3C implementation
+
+Phase 3C is complete. It preserves the locked Phase 3B comparison and implements
+the preplanned prior, reference, configured count-threshold, and cutoff
+sensitivities. The historical minimum of 50 and later minima of 3 and 20 are
+supplemental. Phase 3C
+also resolves raw-score top-K ties with overlap bounds and fractional membership,
+diagnoses predictive coverage and miss direction, and analyzes later delivery
+outcomes with identical raw/adjusted populations and seller-clustered uncertainty.
+
+The operational cohort requires purchase and the associated review answer on or
+after 2018-01-01. The rating predictors use only pre-cutoff answers.
+Delivery lateness is defined only for delivered orders with valid estimated and
+actual timestamps. See [`phase3c_methodology.md`](phase3c_methodology.md) for
+full definitions. These operational estimates are observational associations,
+not causal effects.

@@ -20,8 +20,12 @@ dist/
 !.env.example
 *.pem
 *.key
+*.p12
+*.pfx
 
 # Yelp and other local datasets (retain directory placeholders)
+olist_*_dataset.csv
+product_category_name_translation.csv
 data/raw/*
 !data/raw/.gitkeep
 data/interim/*
@@ -50,6 +54,23 @@ data/private/
 *.sqlite
 *.sqlite3
 *.pbix
+*.pbip
+*.pbir
+*.pbism
+*.abf
+model.bim
+*.Report/
+*.SemanticModel/
+.pbi/
+dashboards/powerbi/*
+!dashboards/powerbi/.gitkeep
+
+# Local schema, profiling, EDA, and real-data-derived reports
+reports/local/
+reports/figures/local/
+.*.staging-*
+.*.backup-*
+.*.previous
 
 # Editor and operating-system files
 .vscode/
