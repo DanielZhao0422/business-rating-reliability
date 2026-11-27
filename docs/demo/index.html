@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore the findings and original Power BI Desktop implementation of Daniel Zhao’s marketplace seller-rating reliability study.">
+  <title>Power BI Report Demonstration · Daniel Zhao</title>
+  <link rel="stylesheet" href="demo.css">
+  <script type="module" src="demo.js"></script>
+</head>
+<body>
+<a class="skip" href="#report">Skip to report</a>
+<header class="masthead">
+  <div class="shell masthead-inner">
+    <a class="brand" href="../"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>Daniel Zhao</a>
+    <nav aria-label="Project"><a href="../">Case study</a><a href="#power-bi-evidence">Power BI evidence</a></nav>
+  </div>
+</header>
+<main>
+  <header class="intro">
+    <div class="shell">
+      <div class="intro-grid">
+        <div>
+          <p class="eyebrow">Original Power BI Desktop report</p>
+          <h1>Marketplace rating reliability</h1>
+          <p class="lede">Can accounting for review volume improve predictions of later customer ratings? Explore the five report pages in a browser demonstration built from the original Power BI work.</p>
+          <a class="primary" href="#report">Explore the report</a>
+        </div>
+        <figure class="hero-capture">
+          <a href="../assets/images/power-bi-overview.png">
+            <img src="../assets/images/power-bi-overview.png" width="1016" height="601" alt="Original Power BI Overview page with holdout prediction error and the review-volume comparison.">
+            <span class="capture-caption">Original Desktop capture <span>View full size</span></span>
+          </a>
+        </figure>
+      </div>
+      <dl class="inventory" aria-label="Verified original Power BI implementation">
+        <div><dt>Report pages</dt><dd>5</dd></div>
+        <div><dt>Imported tables</dt><dd>15</dd></div>
+        <div><dt>Active relationships</dt><dd>6</dd></div>
+        <div><dt>DAX measures</dt><dd>102</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <section class="report shell" id="report" tabindex="-1" aria-label="Interactive report demonstration">
+    <noscript><p class="notice">Enable JavaScript to explore the browser demonstration. The Power BI captures and technical links are available below.</p></noscript>
+    <p id="load-error" class="notice" role="alert" hidden>The report data could not load. Reload this page to try again.</p>
+    <div class="page-nav" role="tablist" aria-label="Report pages" hidden>
+      <button id="tab-overview" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+      <button id="tab-ratings" role="tab" aria-controls="ratings" aria-selected="false" tabindex="-1">Ratings</button>
+      <button id="tab-rankings" role="tab" aria-controls="rankings" aria-selected="false" tabindex="-1">Rankings</button>
+      <button id="tab-validation" role="tab" aria-controls="validation" aria-selected="false" tabindex="-1">Validation</button>
+      <button id="tab-operations" role="tab" aria-controls="operations" aria-selected="false" tabindex="-1">Operations</button>
+    </div>
+
+    <section id="overview" class="page" role="tabpanel" aria-labelledby="tab-overview" tabindex="0" hidden>
+      <div class="page-heading">
+        <div><p class="eyebrow">Historical holdout</p><h2>Review volume improved rating estimates</h2>
+        <p>The adjustment helped most among sellers with just one to four historical reviews.</p></div>
+        <span class="tag">Fixed study results</span>
+      </div>
+      <div class="kpis" id="overview-kpis"></div>
+      <div class="grid overview-grid">
+        <section class="card chart-card" aria-labelledby="mae-title">
+          <div class="card-head"><h3 id="mae-title">Prediction error by historical review volume</h3><p>Seller-equal MAE in stars · lower is better</p></div>
+          <div class="legend"><span class="raw-key">Raw average</span><span class="adjusted-key">Adjusted estimate</span></div>
+          <div id="volume-chart" class="volume-chart"></div>
+        </section>
+        <section class="card" aria-labelledby="band-title">
+          <div class="card-head"><h3 id="band-title">Inspect a review band</h3><p>Pick a band to see the evidence behind its comparison.</p></div>
+          <div id="volume-detail" aria-live="polite"></div>
+        </section>
+      </div>
+      <div id="study-scope" class="scope" aria-label="Study populations"></div>
+    </section>
+
+    <section id="ratings" class="page" role="tabpanel" aria-labelledby="tab-ratings" tabindex="0" hidden>
+      <div class="page-heading">
+        <div><p class="eyebrow">Synthetic demonstration</p><h2>See how review volume changes the estimate</h2>
+        <p>These fictional sellers were constructed independently. Select a point or seller to compare the raw and adjusted ratings.</p></div>
+        <span class="tag synthetic">Fictional data</span>
+      </div>
+      <div class="control-bar">
+        <label>Historical review band<select id="rating-band"><option value="all">All bands</option></select></label>
+        <label>Fictional seller<select id="rating-seller"></select></label>
+        <button class="secondary" id="rating-reset" type="button">Reset filters</button>
+      </div>
+      <div class="grid ratings-grid">
+        <section class="card chart-card">
+          <div class="card-head"><h3>Rating adjustment by review count</h3><p>Each point is a fictional seller. The horizontal axis uses a log scale.</p></div>
+          <div id="seller-scatter"></div>
+          <div id="rating-bands" class="band-strip"></div>
+        </section>
+        <section class="card">
+          <div class="card-head"><h3>Selected seller evidence</h3><p id="rating-count"></p></div>
+          <div id="seller-detail" aria-live="polite"></div>
+          <p id="rating-settings" class="caption"></p>
+          <details class="custom">
+            <summary>Try your own inputs</summary>
+            <form id="custom-rating">
+              <label>Raw rating<input name="raw" type="number" required min="1" max="5" step="0.01" value="5"></label>
+              <label>Historical reviews<input name="count" type="number" required min="1" max="10000" step="1" value="2"></label>
+              <button type="submit" class="secondary">Calculate</button>
+              <output id="custom-result" aria-live="polite"></output>
+            </form>
+          </details>
+        </section>
+      </div>
+      <p class="caption">The browser links fictional selections to the evidence card. The native scatter provides real seller detail and model-conditional intervals locally. The browser example displays point estimates.</p>
+    </section>
+
+    <section id="rankings" class="page" role="tabpanel" aria-labelledby="tab-rankings" tabindex="0" hidden>
+      <div class="page-heading">
+        <div><p class="eyebrow">Ranking sensitivity</p><h2>Adjustment can change a shortlist</h2>
+        <p>In the study, the raw and adjusted Top 10 shared zero sellers under every feasible ordering of ties at the raw cutoff.</p></div>
+        <span class="tag">Fixed study results</span>
+      </div>
+      <div class="kpis" id="ranking-kpis"></div>
+      <div class="grid">
+        <section class="card">
+          <div class="card-head"><h3>Shortlist overlap</h3><p>Compare the same 1,098 paired sellers. The selector scopes this table.</p></div>
+          <div class="inline-controls"><label>Shortlist size<select id="rank-k"><option value="all">All sizes</option><option value="10">Top 10</option><option value="25">Top 25</option><option value="50">Top 50</option></select></label><button id="rank-reset" class="secondary" type="button">Reset</button></div>
+          <table><thead><tr><th scope="col">Size</th><th scope="col">Feasible overlap</th><th scope="col">Fractional overlap</th></tr></thead><tbody id="rank-table"></tbody></table>
+          <p class="caption" id="rank-summary" aria-live="polite"></p>
+          <p class="caption">Fractional overlap assumes uniform ordering within the boundary tie. The comparison measures sensitivity. Which ranking identifies better sellers remains an open question.</p>
+        </section>
+        <section class="card synthetic-card">
+          <div class="card-head"><p class="eyebrow">Fictional sellers</p><h3>See the order change</h3><p>Sort the same six examples by raw or adjusted rating. Ties receive their average rank.</p></div>
+          <fieldset class="choices"><legend>Order by</legend><label><input name="toy-order" type="radio" value="raw" checked> Raw rating</label><label><input name="toy-order" type="radio" value="adjusted"> Adjusted rating</label></fieldset>
+          <table><thead><tr><th scope="col">Seller</th><th scope="col">Raw rank</th><th scope="col">Adj. rank</th><th scope="col">Movement</th></tr></thead><tbody id="toy-ranking"></tbody></table>
+          <p class="caption" id="toy-summary" aria-live="polite"></p>
+          <p class="caption">Brook and Harbor both start at 5.00 stars. With two reviews, Brook moves closer to the pooled reference than Harbor does with eleven.</p>
+        </section>
+      </div>
+    </section>
+
+    <section id="validation" class="page" role="tabpanel" aria-labelledby="tab-validation" tabindex="0" hidden>
+      <div class="page-heading">
+        <div><p class="eyebrow">Historical validation</p><h2>Improvement held up, but intervals undercovered</h2>
+        <p>Two expanding 2017 folds selected the shrinkage strength before the holdout. Later averages fell within their predictive intervals less often than planned.</p></div>
+        <span class="tag">Fixed study results</span>
+      </div>
+      <div class="kpis" id="validation-kpis"></div>
+      <div class="grid">
+        <section class="card chart-card">
+          <div class="card-head"><h3>Predictive coverage by historical review volume</h3><p>Observed coverage of later averages · dotted line at the 95% target</p></div>
+          <div id="coverage-chart"></div>
+          <label class="compact">Inspect a band<select id="coverage-band"></select></label>
+          <p id="coverage-detail" class="caption" aria-live="polite"></p>
+        </section>
+        <section class="card chart-card">
+          <div class="card-head"><h3>Final-period error improvement by prior strength</h3><p>MAE reduction in stars · teal marks the strength selected before holdout</p></div>
+          <div id="prior-chart"></div>
+          <p class="caption">Final-period sensitivity shows how results vary under other settings. Strength 20 was chosen using historical validation.</p>
+        </section>
+      </div>
+      <section class="card scenario-card">
+        <div class="card-head"><h3>Sensitivity comparisons</h3><p>The browser includes the prior-strength and reference-weighting families. These selections scope the comparison table.</p></div>
+        <div class="inline-controls">
+          <label>Scenario family<select id="scenario-family"><option value="all">All displayed families</option><option value="prior_strength">Prior strength</option><option value="reference_weighting">Reference weighting</option></select></label>
+          <label>Scenario<select id="scenario-choice"></select></label>
+          <button id="scenario-reset" class="secondary" type="button">Reset filters</button>
+        </div>
+        <table class="scenario-table"><thead><tr><th scope="col">Scenario</th><th scope="col">Status</th><th scope="col">Raw MAE</th><th scope="col">Adj. MAE</th><th scope="col">Gain</th><th scope="col">Sellers</th></tr></thead><tbody id="scenario-table"></tbody></table>
+        <p class="caption" id="scenario-summary" aria-live="polite"></p>
+      </section>
+    </section>
+
+    <section id="operations" class="page" role="tabpanel" aria-labelledby="tab-operations" tabindex="0" hidden>
+      <div class="page-heading">
+        <div><p class="eyebrow">Fulfillment</p><h2>Track late deliveries directly</h2>
+        <p>Ratings had weak observational associations with later lateness. The adjusted-rating interval crosses zero.</p></div>
+        <span class="tag">Fixed study results</span>
+      </div>
+      <div class="kpis" id="operations-kpis"></div>
+      <div class="grid">
+        <section class="card chart-card">
+          <div class="card-head"><h3>Historical rating and later late-delivery rate</h3><p>Spearman correlation with 95% bootstrap intervals · zoomed near zero</p></div>
+          <div id="operations-chart"></div>
+        </section>
+        <section class="card">
+          <div class="card-head"><h3>Inspect an association</h3><p>Choose which result to highlight. The study totals and both estimates stay fixed.</p></div>
+          <label>Rating method<select id="operations-method"><option value="both">Compare both</option><option value="raw">Raw average</option><option value="adjusted">Adjusted estimate</option></select></label>
+          <p class="caption" id="operations-detail" aria-live="polite"></p>
+        </section>
+      </div>
+      <p class="caption">The native Operations slicers scope the seller scatter. This browser view shows the published aggregate comparison and its denominators.</p>
+    </section>
+  </section>
+
+  <section class="evidence" id="power-bi-evidence">
+    <div class="shell">
+      <p class="eyebrow">Power BI development</p>
+      <h2>Inside the native report</h2>
+      <p class="evidence-intro">Power Query imports typed analytical tables from validated CSV exports. The semantic model uses single-direction relationships, and DAX separates fixed study results from measures that respond to filters.</p>
+      <div class="grid">
+        <div class="card">
+          <h3>Power Query, model and DAX</h3>
+          <dl class="evidence-facts">
+            <div><dt>Power Query</dt><dd>15 typed CSV imports via the ExportRoot parameter</dd></div>
+            <div><dt>Semantic model</dt><dd>Six active, single-direction relationships</dd></div>
+            <div><dt>Report design</dt><dd>Five pages, 102 measures, scoped slicers and tooltips</dd></div>
+          </dl>
+          <a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/docs/powerbi_import_guide.md">Power BI implementation and refresh guide</a>
+        </div>
+        <figure class="evidence-capture">
+          <a href="../assets/images/power-bi-validation.png">
+            <img src="../assets/images/power-bi-validation.png" width="1016" height="601" loading="lazy" alt="Original Power BI Validation page with aggregate predictive coverage, sensitivity comparisons and bootstrap results.">
+            <span class="capture-caption">Original Validation page <span>View full size</span></span>
+          </a>
+        </figure>
+      </div>
+      <details class="technical" id="semantic-model" open>
+        <summary>Semantic model diagram and filter direction</summary>
+        <p>Arrows show the active filter direction from the one side to the many side. The ranking, calibration and fixed study summaries have separate aggregate contexts.</p>
+        <ul class="relationships">
+          <li><code>DimReviewVolume</code><span>→</span><code>DimSeller</code></li>
+          <li><code>DimSeller</code><span>→</span><code>FactSellerEstimate</code></li>
+          <li><code>DimSeller</code><span>→</span><code>FactSellerEvaluation</code></li>
+          <li><code>DimSeller</code><span>→</span><code>FactSellerOperational</code></li>
+          <li><code>DimMethod</code><span>→</span><code>FactSellerEstimate</code></li>
+          <li><code>DimScenario</code><span>→</span><code>FactSensitivityScenario</code></li>
+        </ul>
+        <p><a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/docs/powerbi_data_model.md">Inspect the full model contract</a></p>
+      </details>
+      <details class="technical" id="dax-details">
+        <summary>Five DAX measures and why they matter</summary>
+        <div id="dax-examples"></div>
+        <p><a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/src/rating_reliability/powerbi_measures.py">Read the original measure definitions</a></p>
+      </details>
+      <details class="technical">
+        <summary>How the browser experience was adapted</summary>
+        <p>Overview and Operations retain fixed study values. Rankings scopes the overlap table. Validation scopes the selected sensitivity comparisons while keeping the headline findings fixed. In Ratings, the browser coordinates independent fictional sellers with an evidence card. The Rankings example also uses those fictional inputs.</p>
+        <p>Browser charts read precomputed aggregate research values. The native report retains seller scatter plots, seller-level tooltips and the full sensitivity set. The complete Power BI project and populated model stay local.</p>
+      </details>
+    </div>
+  </section>
+</main>
+<footer>
+  <div class="shell">
+    <p>Research and original Power BI report by Daniel Zhao.</p>
+    <nav aria-label="Resources"><a href="../">Case study</a><a href="https://github.com/DanielZhao0422/business-rating-reliability">Source repository</a><a href="https://github.com/DanielZhao0422/business-rating-reliability/blob/main/docs/data_attribution.md">Data credit and terms</a></nav>
+    <p>Data source <a href="https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce">Brazilian E-Commerce Public Dataset by Olist</a> · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p>
+  </div>
+</footer>
+</body>
+</html>

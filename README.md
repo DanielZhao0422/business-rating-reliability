@@ -4,7 +4,7 @@
 
 Review-volume-aware estimates reduced historical holdout prediction MAE by **22.3%**, from **0.694 to 0.539 stars**, across **1,098 paired sellers**. The absolute improvement was **0.155 stars** with a **95% paired bootstrap interval of 0.124–0.186**.
 
-**[View the live interactive case study](https://danielzhao0422.github.io/business-rating-reliability/)**
+**[Read the live case study](https://danielzhao0422.github.io/business-rating-reliability/) · [Explore the Power BI browser demonstration](https://danielzhao0422.github.io/business-rating-reliability/demo/)**
 
 [Visual case study source](docs/index.html) · [Local preview instructions](docs/reproducibility.md#preview-the-case-study) · [Methodology](docs/methodology.md)
 
@@ -14,7 +14,7 @@ Previous work evaluating businesses and customer reviews inspired this independe
 
 [![Power BI Overview with corrected holdout errors and historical review bands](docs/assets/images/power-bi-overview.png)](docs/assets/images/power-bi-overview.png)
 
-*Actual Power BI Desktop Overview. The interactive report stays local.*
+*Actual Power BI Desktop Overview. The complete native report and populated model stay local.*
 
 ## Findings
 

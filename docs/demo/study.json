@@ -1,0 +1,252 @@
+{
+  "study": {
+    "eligible": 95245.0,
+    "historical": 40321.0,
+    "later": 54924.0,
+    "ratedSellers": 3064.0,
+    "paired": 1098.0,
+    "raw": 0.693688,
+    "adjusted": 0.538918,
+    "gain": 0.154769,
+    "relative": 0.223111,
+    "lower": 0.124276,
+    "upper": 0.186277,
+    "reference": 4.153046799434538,
+    "strength": 20,
+    "historicalSellers": 1741
+  },
+  "volume": [
+    {
+      "band": "1-4",
+      "sellers": 366.0,
+      "historical": 824.0,
+      "later": 4219.0,
+      "raw": 1.061833,
+      "adjusted": 0.720783,
+      "gain": 0.34105
+    },
+    {
+      "band": "5-9",
+      "sellers": 177.0,
+      "historical": 1190.0,
+      "later": 2537.0,
+      "raw": 0.721483,
+      "adjusted": 0.599329,
+      "gain": 0.122155
+    },
+    {
+      "band": "10-19",
+      "sellers": 196.0,
+      "historical": 2753.0,
+      "later": 5035.0,
+      "raw": 0.545874,
+      "adjusted": 0.467743,
+      "gain": 0.078131
+    },
+    {
+      "band": "20-49",
+      "sellers": 178.0,
+      "historical": 5648.0,
+      "later": 6400.0,
+      "raw": 0.460515,
+      "adjusted": 0.424202,
+      "gain": 0.036313
+    },
+    {
+      "band": "50+",
+      "sellers": 181.0,
+      "historical": 26414.0,
+      "later": 23148.0,
+      "raw": 0.31145,
+      "adjusted": 0.301983,
+      "gain": 0.009467
+    }
+  ],
+  "ranks": {
+    "sellers": 1098.0,
+    "spearman": 0.828006,
+    "kendall": 0.640742,
+    "movement": 143.568306,
+    "tied": 816,
+    "largestTie": 142,
+    "top": [
+      {
+        "k": 10.0,
+        "low": 0.0,
+        "high": 0.0,
+        "fractional": 0.0
+      },
+      {
+        "k": 25.0,
+        "low": 0.0,
+        "high": 1.0,
+        "fractional": 0.176056
+      },
+      {
+        "k": 50.0,
+        "low": 0.0,
+        "high": 1.0,
+        "fractional": 0.352113
+      }
+    ]
+  },
+  "calibration": {
+    "1-4": {
+      "coverage": 0.961749,
+      "target": 0.95,
+      "sellers": 366.0,
+      "width": 2.506409
+    },
+    "10-19": {
+      "coverage": 0.943878,
+      "target": 0.95,
+      "sellers": 196.0,
+      "width": 1.776093
+    },
+    "20-49": {
+      "coverage": 0.904494,
+      "target": 0.95,
+      "sellers": 178.0,
+      "width": 1.430216
+    },
+    "5-9": {
+      "coverage": 0.932203,
+      "target": 0.95,
+      "sellers": 177.0,
+      "width": 2.153356
+    },
+    "50+": {
+      "coverage": 0.856354,
+      "target": 0.95,
+      "sellers": 181.0,
+      "width": 0.909214
+    },
+    "overall": {
+      "coverage": 0.92714,
+      "target": 0.95,
+      "sellers": 1098.0,
+      "width": 1.881375
+    }
+  },
+  "scenarios": [
+    {
+      "family": "prior_strength",
+      "label": "Prior M 1",
+      "status": "Preplanned",
+      "strength": 1,
+      "sellers": 1098.0,
+      "raw": 0.693688,
+      "adjusted": 0.621262,
+      "gain": 0.072426
+    },
+    {
+      "family": "prior_strength",
+      "label": "Prior M 2",
+      "status": "Preplanned",
+      "strength": 2,
+      "sellers": 1098.0,
+      "raw": 0.693688,
+      "adjusted": 0.59445,
+      "gain": 0.099237
+    },
+    {
+      "family": "prior_strength",
+      "label": "Prior M 5",
+      "status": "Preplanned",
+      "strength": 5,
+      "sellers": 1098.0,
+      "raw": 0.693688,
+      "adjusted": 0.563356,
+      "gain": 0.130332
+    },
+    {
+      "family": "prior_strength",
+      "label": "Prior M 10",
+      "status": "Preplanned",
+      "strength": 10,
+      "sellers": 1098.0,
+      "raw": 0.693688,
+      "adjusted": 0.547276,
+      "gain": 0.146411
+    },
+    {
+      "family": "prior_strength",
+      "label": "Prior M 20",
+      "status": "Preplanned",
+      "strength": 20,
+      "sellers": 1098.0,
+      "raw": 0.693688,
+      "adjusted": 0.538918,
+      "gain": 0.154769
+    },
+    {
+      "family": "prior_strength",
+      "label": "Prior M 50",
+      "status": "Preplanned",
+      "strength": 50,
+      "sellers": 1098.0,
+      "raw": 0.693688,
+      "adjusted": 0.535191,
+      "gain": 0.158496
+    },
+    {
+      "family": "prior_strength",
+      "label": "Prior M 100",
+      "status": "Preplanned",
+      "strength": 100,
+      "sellers": 1098.0,
+      "raw": 0.693688,
+      "adjusted": 0.535403,
+      "gain": 0.158284
+    },
+    {
+      "family": "reference_weighting",
+      "label": "Reference Pooled",
+      "status": "Preplanned",
+      "strength": 20,
+      "sellers": 1098.0,
+      "raw": 0.693688,
+      "adjusted": 0.538918,
+      "gain": 0.154769
+    },
+    {
+      "family": "reference_weighting",
+      "label": "Reference Seller Equal",
+      "status": "Preplanned",
+      "strength": 20,
+      "sellers": 1098.0,
+      "raw": 0.693688,
+      "adjusted": 0.546933,
+      "gain": 0.146754
+    }
+  ],
+  "operations": {
+    "orders": 38518.0,
+    "evaluable": 37873.0,
+    "late": 3639.0,
+    "rate": 0.096084,
+    "methods": [
+      {
+        "method": "raw",
+        "sellers": 1034.0,
+        "estimate": -0.083513,
+        "low": -0.150435,
+        "high": -0.017204
+      },
+      {
+        "method": "adjusted",
+        "sellers": 1034.0,
+        "estimate": -0.041781,
+        "low": -0.101689,
+        "high": 0.019047
+      }
+    ]
+  },
+  "dax": {
+    "Raw MAE": "CALCULATE (MAX (FactStudySummary[metric_value]), REMOVEFILTERS (), FactStudySummary[metric_key] = \"raw_mae\")",
+    "Volume Raw MAE": "CALCULATE (SELECTEDVALUE (FactEvaluationVolume[raw_mae]), FactEvaluationVolume[group_basis] = \"historical\", TREATAS (VALUES (DimReviewVolume[volume_group_key]), FactEvaluationVolume[volume_group_key]))",
+    "Subgroup Raw MAE": "AVERAGEX (VALUES (FactSellerEvaluation[seller_key]), CALCULATE (MAX (FactSellerEvaluation[raw_absolute_error])))",
+    "Scenario Improvement": "IF (HASONEVALUE (DimScenario[scenario_key]), SELECTEDVALUE (FactSensitivityScenario[mae_improvement]))",
+    "Selected Late Delivery Rate": "DIVIDE ([Selected Late Deliveries], [Selected Evaluable Deliveries])"
+  }
+}
