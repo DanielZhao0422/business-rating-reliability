@@ -4,13 +4,9 @@
 
 Review-volume-aware estimates reduced historical holdout prediction MAE by **22.3%**, from **0.694 to 0.539 stars**, across **1,098 paired sellers**. The absolute improvement was **0.155 stars** with a **95% paired bootstrap interval of 0.124–0.186**.
 
+**[View the live interactive case study](https://danielzhao0422.github.io/business-rating-reliability/)**
+
 [Visual case study source](docs/index.html) · [Local preview instructions](docs/reproducibility.md#preview-the-case-study) · [Methodology](docs/methodology.md)
-
-GitHub Pages publication is pending. Use the local preview instructions above to view the case study.
-
-<!-- After verifying the GitHub Pages deployment, replace the pending sentence with:
-[View the interactive case study](https://danielzhao0422.github.io/business-rating-reliability/)
--->
 
 ## Why it matters
 
