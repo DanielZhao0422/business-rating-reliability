@@ -88,19 +88,11 @@ contemporaneous rather than prediction-time seller information.
 
 ## Reproducibility and publication
 
-Run from PowerShell:
-
-```powershell
-.\.venv\Scripts\python.exe -m rating_reliability.phase3c_analysis `
-  --database data\processed\olist_analytics.duckdb `
-  --config config\statistical_protocol.toml `
-  --phase3b-dir reports\local\statistical_analysis `
-  --output-dir reports\local\phase3c `
-  --overwrite
-```
+Run `rating_reliability.phase3c_analysis` after the historical evaluation
+using the commands in the [reproduction guide](reproducibility.md#build-and-analyze).
 
 The CLI checks the protocol and every required Phase 3B artifact, reproduces the
 selected prior strength and primary MAEs, stages all outputs, and confirms Phase
 3B checksums are unchanged before publication. Local outputs contain aggregates
-and charts, never seller identifiers or review text. They remain Git-ignored
-while CC BY-NC-SA 4.0 and underlying-rights publication questions remain open.
+and charts. They stay Git-ignored. The public case study and browser demonstration
+use selected aggregates under the [publication boundary](data_attribution.md).

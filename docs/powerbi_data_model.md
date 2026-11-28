@@ -1,8 +1,8 @@
 # Power BI Data Model and Export Contract
 
-## Status and design boundary
+## Implemented model
 
-Phase 4A defined this model. The [export contract](../config/powerbi_export_spec.toml)
+The [export contract](../config/powerbi_export_spec.toml)
 defines its column order, types, nullability, keys, and relationships. The
 project builder consumes the validated exports and generates a Desktop
 semantic model. The [Power BI implementation guide](powerbi_import_guide.md) records
@@ -129,9 +129,9 @@ Grain: one row per historical seller per method. Primary key
 | `top_50_probability` | decimal, nullable | Model-conditional posterior inclusion |
 | `ranking_universe` | text | Historical or primary evaluation universe |
 
-Phase 4B must not manufacture a raw-method uncertainty interval. Seller-level
-posterior fields must be recomputed with existing Phase 3 functions because the
-current aggregate artifacts intentionally do not export them.
+The credible interval applies to the adjusted model. The exporter recomputes
+seller-level posterior fields using the existing statistical functions, since
+the aggregate research artifacts contain summaries only.
 Rank and top-K fields are populated only for sellers in the primary evaluation
 universe and remain blank for historical-only sellers; their universe label is
 therefore explicit.
@@ -265,9 +265,8 @@ study-summary tables.
 
 ## Exact export column inventory
 
-Phase 4B may add only manifest/schema metadata without revising this contract.
-Any analytical column change requires updating this document and the export spec
-before implementation.
+The CSV columns below are governed by the executable
+[export specification](../config/powerbi_export_spec.toml).
 
 | File | Ordered analytical columns |
 |---|---|
@@ -322,10 +321,10 @@ rows. A different validated input must fail reconciliation and be investigated.
 | Operational associations/quartiles | Phase 3C operational CSV/JSON |
 | Fixed summary | Verified Phase 2C/3B/3C artifacts |
 
-The Phase 4B exporter must stage the complete directory, refuse overwrite
-without `--overwrite`, validate all primary/foreign keys, reconcile counts and
-weighted metrics, write a SHA-256 manifest and schema report, and only then
-replace a prior valid export. It must not copy source IDs into logs or errors.
+The exporter stages the complete directory, validates primary and foreign keys,
+reconciles counts and weighted metrics, and writes a SHA-256 manifest and schema
+report. Replacing a prior export requires `--overwrite`. Source IDs stay
+within the local analytical workflow.
 
 ## Model quality-control decisions
 
@@ -337,4 +336,4 @@ replace a prior valid export. It must not copy source IDs into logs or errors.
 - Top-K summaries retain their fixed ranking universe.
 - Operational rates use sums of counts, never averages of seller percentages,
   unless the visual explicitly says “average seller rate.”
-- No order-level export is required for the planned five pages.
+- The five report pages use seller-grain and aggregate exports.

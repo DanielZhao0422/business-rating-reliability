@@ -2,13 +2,12 @@
 
 ## Status and analytical scope
 
-Phase 1 baselines, Phase 2A synthetic ingestion, reusable profiling, the Olist
-suitability audit, Phase 2C analytical table materialization, the Phase 3A
-statistical protocol, Phase 3B historical evaluation, Phase 3C robustness and
-operational research, and Phase 4A Power BI architecture are complete. Phase 4B
-dashboard construction remains planned. The complete prespecified protocol is in
-[`docs/statistical_analysis_plan.md`](statistical_analysis_plan.md), with
-machine-readable defaults in `config/statistical_protocol.toml`.
+The final study uses the corrected answer-time evaluation and the locked
+[statistical protocol](statistical_analysis_plan.md). The executable defaults
+are in [`config/statistical_protocol.toml`](../config/statistical_protocol.toml).
+The research includes the historical holdout, robustness and calibration,
+ranking sensitivity, and forward fulfillment analysis. The completed native
+Power BI report and public browser demonstration summarize these findings.
 
 The study examines **customer order experience ratings associated with
 marketplace sellers**. "Seller rating" and "seller ranking" are convenient
@@ -143,13 +142,13 @@ The fixed primary cutoff is **January 1, 2018**:
 - evaluation period: `review_answer_timestamp >= 2018-01-01`, through the last
   eligible answer date.
 
-The original creation-date split counted 40,976 historical and 54,269 later
-ratings. The corrected answer-time split counts 40,321 historical and 54,924
-later ratings, 1,098 paired sellers, and 429 sellers with at least 10 ratings
-in each period. [Temporal availability amendment](temporal_availability_amendment.md) The cutoff has a simple calendar interpretation and sufficient
-two-period coverage. It was designated before statistical method comparison and
-was not selected for favorable results. Alternative cutoffs may be sensitivity
-analyses.
+The corrected split counts 40,321 historical and 54,924 later ratings,
+1,098 paired sellers, and 429 sellers with at least 10 ratings in each period.
+The cutoff was designated before statistical method comparison based on calendar
+interpretability and adequate two-period coverage. Alternative cutoffs are
+evaluated as sensitivity analyses. The earlier creation-date results and the
+reasons for the correction are recorded in the
+[temporal availability amendment](temporal_availability_amendment.md).
 
 For every historical prediction:
 
@@ -195,33 +194,26 @@ reporting, and safe DuckDB publication. It remains tested but is not presented
 as the implemented Olist adapter. The Olist audit reads the actual relational
 CSVs directly and preserves their source semantics.
 
-The audit verifies software and dataset suitability; it does not rank sellers or
-establish the effectiveness of shrinkage. Original Olist files and real-data
-outputs remain local while public use is conditional on the published CC
-BY-NC-SA 4.0 terms and unresolved underlying-rights considerations.
+The audit checks source suitability and seller attribution. The holdout analysis
+evaluates shrinkage. Original Olist files and private analytical outputs stay
+local under the [established publication boundary](data_attribution.md).
 
 Phase 2C verifies and materializes the eligible data population; it likewise
 does not calculate Phase 3 estimates or comparisons. Operational features that
 become known after purchase cannot be used as historical predictors before their
 availability.
 
-## Dashboard and reporting plan
+## Power BI reporting and browser demonstration
 
-The Phase 4A Power BI specification defines:
+The completed native Power BI Desktop report has five pages: Overview,
+Ratings, Rankings, Validation, and Operations. See the [model contract](powerbi_data_model.md)
+and [implementation and refresh guide](powerbi_import_guide.md) for the
+relationships, data imports, measures, and local verification.
 
-1. Marketplace Rating Overview
-2. Rating Reliability & Uncertainty
-3. Ranking Stability
-4. Historical Evaluation
-5. Delivery & Fulfillment Insights
-
-The Phase 4B dashboard should explain raw versus adjusted estimates, uncertainty, review-volume
-effects, robustness, out-of-sample outcomes, and operational associations. It
-will not become a generic revenue or marketplace sales dashboard.
-
-The implementation-ready model, KPI dictionary, wireframes, validation matrix,
-and local refresh plan are documented in the `powerbi_*` files under `docs/`.
-Phase 4A creates no populated export and no `.pbix`.
+The [public browser demonstration](https://danielzhao0422.github.io/business-rating-reliability/demo/)
+presents selected aggregate findings and labels the fictional seller examples
+separately. The populated Desktop report and seller-level outputs stay local.
+See the [publication boundary](data_attribution.md).
 
 ## Phase 3C implementation
 

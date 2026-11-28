@@ -6,7 +6,7 @@ Review-volume-aware estimates reduced historical holdout prediction MAE by **22.
 
 **[Read the live case study](https://danielzhao0422.github.io/business-rating-reliability/) · [Explore the Power BI browser demonstration](https://danielzhao0422.github.io/business-rating-reliability/demo/)**
 
-[Visual case study source](docs/index.html) · [Local preview instructions](docs/reproducibility.md#preview-the-case-study) · [Methodology](docs/methodology.md)
+[Methodology](docs/methodology.md) · [Reproduce the study](docs/reproducibility.md) · [Power BI model](docs/powerbi_data_model.md)
 
 ## Why it matters
 
@@ -31,10 +31,13 @@ From Olist’s nine-file relational archive, I used DuckDB and SQL to isolate **
 
 Show counts and uncertainty alongside ratings, treat exact ranks with caution, and track fulfillment directly. The findings describe one historical marketplace and a paired seller cohort. Later observed ratings are noisy, intervals undercovered, and commercial impact was outside the evaluation.
 
-## Repository map
+## Review or reproduce
 
-- [SQL transformations](sql/olist/) and [Python research implementation](src/rating_reliability/) cover attribution, temporal evaluation and robustness.
-- [Power BI generation](src/rating_reliability/powerbi_project.py) and the [model contract](docs/powerbi_data_model.md) cover Power Query imports, DAX, and five native report pages.
-- [Research protocol](config/statistical_protocol.toml), [synthetic tests](tests/), and the [reproduction guide](docs/reproducibility.md) support technical review. Use Python 3.12 or 3.13 with `python -m pip install -e ".[dev]"` in a virtual environment.
+| Start here | What it covers |
+| --- | --- |
+| [Research methodology](docs/methodology.md) | Eligibility, time-based evaluation, bootstrap uncertainty, and interpretation. The [locked protocol](config/statistical_protocol.toml) and [availability amendment](docs/temporal_availability_amendment.md) record the executable settings and the timing correction. |
+| [Technical architecture](docs/architecture.md) | How [DuckDB SQL](sql/olist/) and [Python modules](src/rating_reliability/) produce the research and reporting outputs. |
+| [Power BI implementation](docs/powerbi_import_guide.md) | Five native report pages, 15 Power Query imports, six active relationships, and 102 DAX measures. The [browser demonstration source](docs/demo/) uses aggregate results and labeled fictional examples. |
+| [Reproduction guide](docs/reproducibility.md) | Set up Python 3.12 or 3.13, run the [synthetic tests](tests/) without Olist or Power BI, preview both websites locally, and rebuild the analysis and report with independently obtained data. |
 
 Data source · [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), listed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). See [data credit and terms](docs/data_attribution.md) for the content boundary and separate original software terms.

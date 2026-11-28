@@ -8,6 +8,7 @@ The study joins selected order, item, seller, and review records in DuckDB. It k
 | --- | --- |
 | Original research commentary and figures | Released with independently calculated aggregate statistical findings and Olist attribution. |
 | Power BI Overview and Validation images | Released as static captures of original report pages showing aggregate findings, study settings, and hypothetical examples. |
+| Browser demonstration | Released as a static adaptation using selected aggregate findings, five original DAX expressions, a schema-only relationship diagram, and independently authored fictional seller examples. |
 | Synthetic examples and fixtures | Released as original hypothetical material. The calculator uses the study’s pooled reference and strength. |
 | Original project software | All rights reserved. |
 | Olist records, processed databases, seller and order outputs, and the populated Power BI report | Retained locally. Obtain the source archive from the dataset listing under its applicable terms. |

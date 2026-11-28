@@ -3,6 +3,8 @@
 The study runs locally from a source checkout. Python module commands join the
 CSV audit, DuckDB preparation, locked experiments, and Power BI export workflow.
 Power BI Desktop consumes the validated export package on Windows.
+GitHub Pages serves the case study and the aggregate browser demonstration
+from `docs/`.
 
 ```mermaid
 flowchart LR
@@ -28,10 +30,11 @@ flowchart LR
 | Power BI exports | `powerbi_export` combines DuckDB and the research artifacts, creates HMAC seller keys, and validates the [export contract](../config/powerbi_export_spec.toml), relationships, statistics, and privacy. The local package records per-CSV SHA-256 and research source fingerprints. |
 | Semantic model | `powerbi_project` checks the package and generates a TMSL model. Fifteen typed Power Query imports resolve through `ExportRoot`. Six active one-to-many relationships filter in one direction. Fixed study and other aggregate tables use disconnected contexts as specified. DAX in `powerbi_measures` handles fixed, subgroup, and diagnostic measures. See the [model contract](powerbi_data_model.md) and [DAX implementation](../src/rating_reliability/powerbi_measures.py). |
 | Report definitions | `powerbi_pages` and `powerbi_project` generate a PBIP pointer, five native enhanced PBIR pages, a theme, and `Validation.dax`. The populated project, cache and runtime evidence stay local. See the [Power BI implementation guide](powerbi_import_guide.md). |
+| Public presentation | [Case study](index.html) and [browser demonstration](demo/index.html) use static HTML, CSS, and JavaScript. The demonstration's [data snapshot](demo/study.json) contains selected aggregates from the corrected evaluation, calibration, ranking and operational outputs, along with five original DAX expressions. Fictional examples are defined separately in [demo.js](demo/demo.js). |
 
-The earlier synthetic business/review JSONL pipeline is a separate entry point
-in `ingest`, with canonical SQL under `sql/analysis/`. Its
-[fixtures](../data/sample/README.md)
-exercise ingestion independently of Olist. See the
-[reproduction guide](reproducibility.md) for execution and the
-[data credit and terms](data_attribution.md) for the publication boundary.
+The synthetic business/review JSONL workflow exercises ingestion and profiling
+independently of Olist. The [fixtures](../data/sample/README.md) feed the
+`ingest`, `schema`, and `profiling` modules and their tests. Those tools use
+the [generic analysis SQL](../sql/analysis/) alongside the separate Olist
+transforms. See the [reproduction guide](reproducibility.md) and
+[data credit and terms](data_attribution.md).
